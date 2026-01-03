@@ -1,0 +1,28 @@
+services:
+  wordpress:
+    image: wordpress-postgresql:1.0
+    container_name: wordpress
+    volumes:
+     - ${PATH_TO_DATA}/wordpress:/var/www/html
+    environment:
+     - TZ=${TIME_ZONE_VALUE}
+     - WORDPRESS_DB_HOST=${WORDPRESS_DB_HOST_NAME}
+     - WORDPRESS_DB_USER=${WORDPRESS_DB_USER}
+     - WORDPRESS_DB_PASSWORD_FILE=/run/secrets/WORDPRESS_DB_PASSWORD
+     - WORDPRESS_DB_NAME=${WORDPRESS_DB_NAME}
+     - WORDPRESS_WEBROOT=/blog
+    secrets:
+     - WORDPRESS_DB_PASSWORD
+    networks:
+       postgres_db_net:
+       wordpress_net:
+         ipv4_address: ${IP_ADDRESS_OF_WORPRESS_CONTAINER}
+secrets:
+   WORDPRESS_DB_PASSWORD:
+      file: /path/to/secrets/wordpress_db_secret.txt
+
+networks:
+   postgres_db_net:
+     external: true
+   wordpress_net:
+     external: true

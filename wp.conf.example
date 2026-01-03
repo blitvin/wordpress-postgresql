@@ -1,0 +1,42 @@
+location ^~/blog {
+  root /var/www;
+  fastcgi_hide_header X-Powered-By;
+  add_header Referrer-Policy                   "no-referrer-when-downgrage"       always;
+  add_header X-Content-Type-Options            "nosniff"           always;
+  add_header X-Frame-Options                   "SAMEORIGIN"        always;
+  add_header X-Permitted-Cross-Domain-Policies "none"              always;
+  add_header X-Robots-Tag                      "noindex, nofollow" always;
+  add_header X-XSS-Protection                  "1; mode=block"     always;
+  add_header Strict-Transport-Security "max-age=15768000; includeSubDomains;" always;
+
+  proxy_set_header Host $host;
+  proxy_set_header X-Real-IP $remote_addr;
+  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+  proxy_set_header X-Forwarded-Proto $scheme;
+
+  access_log /path/to/logdir/wordpress.access.log;
+  error_log /path/to/logdir/wordpress.error.log info;
+
+  index index.php;   
+  try_files $uri $uri/ /blog/index.php?$args;
+
+  location ~ \.php(?:$|/) {
+    fastcgi_split_path_info ^(.+?\.php)(/.*)$;
+    if (!-f /var/www$fastcgi_script_name) {
+      return 404;
+    }
+    include fastcgi_params;
+    fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    fastcgi_param PATH_INFO       $fastcgi_path_info;
+    fastcgi_param PATH_TRANSLATED $document_root$fastcgi_path_info;
+    fastcgi_param HTTPS on;
+
+    fastcgi_param modHeadersAvailable true;         # Avoid sending the security headers twice
+    fastcgi_param front_controller_active true;     # Enable pretty urls
+    fastcgi_pass ${WORDPRESS_DOCKER_IP}:9000;
+    fastcgi_intercept_errors on;
+    fastcgi_request_buffering off;
+
+    fastcgi_max_temp_file_size 0;
+  }
+}
