@@ -62,6 +62,10 @@ To run the WordPress
 - create docker_compose.yml from docker.compose.yml.example by replacing all the placeholders with actual data. Load file whatever you use for container management
 - replace placeholders in wp.conf.examle with actual data ( *${IP_ADDRESS_OF_WORPRESS_CONTAINER}* and perhaps /blog if you want different path for your blog)
 - modify default.conf in site-conf subdirectory of nginx configuration dir with include directive to load wp.conf
+- ensure that directory mounted in */var/www/html* in the wordpress docker ( the content directory) is available in nginx under appropriate path: e.g. if location block is taken 
+from the example, where root defined as */var/www* , and blog webroot ( defined in *WORDPRESS_WEBROOT* environment variable in the compose file) is blog, then the content
+directory should be available under */var/www/blog*. In case of nginx running in a docker container, one can mount the directory as read only volume, if nginx runs as OS process,
+it is possible to set up symbolic link pointing to content directory. The directory is used for serving static content directly by nginx and for checks of php scripts existance..
 - enjoy your blog
 
 The include directive should be placed in the *server* block along with other *location* blocks.
